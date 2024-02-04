@@ -1,0 +1,5 @@
+http:
+  addr: :8080
+redis:
+  type: standalone
+  nodes: redis:6379
