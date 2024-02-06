@@ -102,7 +102,6 @@ func (mh *minHeap) Pop() any {
 	n := len(old)
 	item := old[n-1]
 	old[n-1] = nil
-	item.index = -1
 	*mh = old[0 : n-1]
 	return item
 }

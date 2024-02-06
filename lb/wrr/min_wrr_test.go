@@ -2,7 +2,6 @@ package wrr
 
 import (
 	"container/heap"
-	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -15,8 +14,10 @@ func TestMinHeap(t *testing.T) {
 			t,
 			func() {
 				for i := 0; i < 10; i++ {
-					mh.Push(i)
-					mh.Push(strconv.Itoa(i))
+					heap.Push(&mh, &Element{
+						item:     i,
+						priority: i,
+					})
 				}
 			},
 		)
@@ -49,12 +50,11 @@ func TestMinHeap(t *testing.T) {
 
 			eles := make([]*Element, 10)
 			for i := range eles {
-				num := i
 				ele := &Element{
-					item:     num,
-					priority: num,
+					item:     i,
+					priority: i,
 				}
-				eles[num] = ele
+				eles[i] = ele
 				heap.Push(&mh, ele)
 			}
 
@@ -69,12 +69,11 @@ func TestMinHeap(t *testing.T) {
 
 		eles := make([]*Element, 10)
 		for i := range eles {
-			num := i
 			ele := &Element{
-				item:     num,
-				priority: num,
+				item:     i,
+				priority: i,
 			}
-			eles[num] = ele
+			eles[i] = ele
 			heap.Push(&mh, ele)
 		}
 
