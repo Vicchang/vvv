@@ -79,7 +79,7 @@ type minHeap []*Element
 func (mh minHeap) Len() int { return len(mh) }
 
 func (mh minHeap) Less(i, j int) bool {
-	return mh[i].priority > mh[j].priority
+	return mh[i].priority < mh[j].priority
 }
 
 func (mh minHeap) Swap(i, j int) {
@@ -107,8 +107,11 @@ func (mh *minHeap) Pop() any {
 	return item
 }
 
-func (mh *minHeap) peak() *Element {
-	return (*mh)[len(*mh)-1]
+// TODO: this is akward way to do peak, need seek anothoer solution
+func (mh *minHeap) peak() (ele *Element) {
+	ele = heap.Pop(mh).(*Element)
+	heap.Push(mh, ele)
+	return
 }
 
 func (mh *minHeap) update(ele *Element, priority int) {
