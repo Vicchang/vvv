@@ -5,7 +5,7 @@ echo mode: set > coverage.out
 
 for dir in ./...;
 do 
-    go test -coverprofile=coverage.tmp -p 1 $dir -args $@
+    go test -coverprofile=coverage.tmp -p 1 $dir
 
 if [ -f coverage.tmp ]
 then
