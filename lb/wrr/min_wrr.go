@@ -6,78 +6,75 @@ import (
 )
 
 type minWRR struct {
-	mu      sync.RWMutex
-	items   minHeap
-	itemMap map[any]*Item
+	mu         sync.RWMutex
+	elements   minHeap
+	elementMap map[any]*Element // key is item, which is deliered from Add or Update
 }
 
 func NewMinWRR() WRR {
 	h := minHeap{}
 	heap.Init(&h)
 	return &minWRR{
-		items:   h,
-		itemMap: map[any]*Item{},
+		elements:   h,
+		elementMap: map[any]*Element{},
 	}
 }
 
 func (mw *minWRR) Next() (item interface{}) {
 	mw.mu.RLock()
 	defer mw.mu.RUnlock()
-	if len(mw.items) == 0 {
+	if len(mw.elements) == 0 {
 		return nil
 	}
 
-	it, ok := mw.items.Peak().(*Item)
-	if !ok {
-		panic("invalid min heap")
-	}
+	ele := mw.elements.peak()
 
-	return it.value
+	return ele.item
 }
 
 func (mw *minWRR) Add(item any, weight uint32) {
 	mw.mu.Lock()
 	defer mw.mu.Unlock()
 
-	it, ok := mw.itemMap[item]
+	it, ok := mw.elementMap[item]
 	if ok {
-		mw.items.update(it, int(weight))
+		mw.elements.update(it, int(weight))
 		return
 	}
 
-	it = &Item{
-		value:    item,
+	it = &Element{
+		item:     item,
 		priority: it.priority + int(weight),
 	}
-	heap.Push(&mw.items, it)
-	mw.itemMap[item] = it
+	heap.Push(&mw.elements, it)
+	mw.elementMap[item] = it
 }
 
 func (mw *minWRR) Update(item any, weight uint32) {
 	mw.mu.Lock()
 	defer mw.mu.Unlock()
 
-	it, ok := mw.itemMap[item]
+	it, ok := mw.elementMap[item]
 	if ok {
-		mw.items.update(it, int(weight))
+		mw.elements.update(it, int(weight))
 		return
 	}
 
-	it = &Item{
-		value:    item,
+	it = &Element{
+		item:     item,
 		priority: int(weight),
 	}
-	heap.Push(&mw.items, it)
-	mw.itemMap[item] = it
+	heap.Push(&mw.elements, it)
+	mw.elementMap[item] = it
 }
 
-type Item struct {
-	value    any
+type Element struct {
+	item     any
 	priority int
 	index    int
 }
 
-type minHeap []*Item
+type minHeap []*Element
 
 func (mh minHeap) Len() int { return len(mh) }
 
@@ -91,13 +88,15 @@ func (mh minHeap) Swap(i, j int) {
 	mh[j].index = j
 }
 
+// return any in order to follow heap.Interface
 func (mh *minHeap) Push(x any) {
 	n := len(*mh)
-	item := x.(*Item)
+	item := x.(*Element)
 	item.index = n
 	*mh = append(*mh, item)
 }
 
+// return any in order to follow heap.Interface
 func (mh *minHeap) Pop() any {
 	old := *mh
 	n := len(old)
@@ -108,11 +107,11 @@ func (mh *minHeap) Pop() any {
 	return item
 }
 
-func (mh *minHeap) Peak() any {
+func (mh *minHeap) peak() *Element {
 	return (*mh)[len(*mh)-1]
 }
 
-func (mh *minHeap) update(item *Item, priority int) {
-	item.priority = priority
-	heap.Fix(mh, item.index)
+func (mh *minHeap) update(ele *Element, priority int) {
+	ele.priority = priority
+	heap.Fix(mh, ele.index)
 }
