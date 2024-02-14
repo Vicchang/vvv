@@ -34,7 +34,13 @@ func (s *Server) handlPostRequest(c *gin.Context) {
 	body := c.Request.Body
 
 	response, err := http.Post(url, contentType, body)
-	if err != nil || response.StatusCode != http.StatusOK {
+	if err != nil {
+		fmt.Printf("post API error, %s", err)
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	if response.StatusCode != http.StatusOK {
 		c.Status(response.StatusCode)
 		return
 	}

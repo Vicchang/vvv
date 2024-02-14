@@ -9,7 +9,6 @@ import (
 
 	"github.com/vvv/lb/http"
 	"github.com/vvv/lb/redis"
-	"github.com/vvv/lb/wrr"
 	"gopkg.in/yaml.v2"
 )
 
@@ -33,7 +32,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	selectService := redis.NewSelectService(redisCli, wrr.NewMinWRR())
+	selectService := redis.NewSelectService(redisCli)
 	selectService.BackgroundUpdate(ctx)
 
 	podService := redis.NewPodService(redisCli)

@@ -18,10 +18,10 @@ type SelectService struct {
 	wrr    wrr.WRR
 }
 
-func NewSelectService(client redis.UniversalClient, wrr wrr.WRR) *SelectService {
+func NewSelectService(client redis.UniversalClient) *SelectService {
 	return &SelectService{
 		client: client,
-		wrr:    wrr,
+		wrr:    wrr.NewMinWRR(),
 	}
 }
 
@@ -53,6 +53,7 @@ func (srv *SelectService) bgUpdate(ctx context.Context) {
 		return
 	}
 
+	wrr := wrr.NewMinWRR()
 	// TODO: change value to be struct in order to store more data
 	for k, conns := range resp {
 		c, err := strconv.Atoi(conns)
@@ -61,6 +62,7 @@ func (srv *SelectService) bgUpdate(ctx context.Context) {
 			continue
 		}
 
-		srv.wrr.Update(k, uint32(c))
+		wrr.Update(k, uint32(c))
 	}
+	srv.wrr = wrr
 }
