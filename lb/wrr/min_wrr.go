@@ -21,18 +21,26 @@ func NewMinWRR() WRR {
 }
 
 func (mw *minWRR) Next() (item interface{}) {
-	mw.mu.RLock()
-	defer mw.mu.RUnlock()
+	mw.mu.Lock()
+	defer mw.mu.Unlock()
 	if len(mw.elements) == 0 {
 		return nil
 	}
 
 	ele := mw.elements.peak()
+	mw.add(ele.item, 1)
 
 	return ele.item
 }
 
 func (mw *minWRR) Add(item any, weight uint32) {
+	mw.mu.Lock()
+	defer mw.mu.Unlock()
+
+	mw.add(item, weight)
+}
+
+func (mw *minWRR) Update(item any, weight uint32) {
 	mw.mu.Lock()
 	defer mw.mu.Unlock()
 
@@ -44,19 +52,16 @@ func (mw *minWRR) Add(item any, weight uint32) {
 
 	it = &Element{
 		item:     item,
-		priority: it.priority + int(weight),
+		priority: int(weight),
 	}
 	heap.Push(&mw.elements, it)
 	mw.elementMap[item] = it
 }
 
-func (mw *minWRR) Update(item any, weight uint32) {
-	mw.mu.Lock()
-	defer mw.mu.Unlock()
-
+func (mw *minWRR) add(item any, weight uint32) {
 	it, ok := mw.elementMap[item]
 	if ok {
-		mw.elements.update(it, int(weight))
+		mw.elements.update(it, it.priority+int(weight))
 		return
 	}
 
